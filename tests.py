@@ -1,4 +1,5 @@
 from evilshortgen import shortgen
+import tornado.gen
 import unittest
 
 

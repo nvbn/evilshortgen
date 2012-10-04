@@ -3,9 +3,10 @@ from byteplay import (
     BINARY_LSHIFT, SetLineno, LOAD_FAST,
     UNPACK_SEQUENCE,
 )
-from functools import partial
+from functools import partial, wraps
 from tornado import gen
 import inspect
+import re
 
 def shortgen(fnc):
     code = Code.from_code(fnc.func_code)
@@ -55,3 +56,17 @@ def shortgen(fnc):
 
 def fastgen(fnc):
     return partial(gen.Task, fnc)
+
+
+def shortpatch(*objects):
+    for obj in objects:
+        def getattribute(self, name):
+            attr = None
+            if name.find('_e') == len(name) - 2:
+                attr = getattr(self, name[:-2])
+            if hasattr(attr, '__call__'):
+                return fastgen(attr)
+            else:
+                return super(obj, self).__getattribute__(name)
+        obj.__getattribute__ = getattribute
+

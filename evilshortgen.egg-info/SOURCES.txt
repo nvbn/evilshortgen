@@ -5,5 +5,6 @@ evilshortgen.egg-info/PKG-INFO
 evilshortgen.egg-info/SOURCES.txt
 evilshortgen.egg-info/dependency_links.txt
 evilshortgen.egg-info/entry_points.txt
-evilshortgen.egg-info/not-zip-safe
+evilshortgen.egg-info/requires.txt
 evilshortgen.egg-info/top_level.txt
+evilshortgen.egg-info/zip-safe
