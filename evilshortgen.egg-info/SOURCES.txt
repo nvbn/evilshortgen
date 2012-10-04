@@ -1,0 +1,9 @@
+setup.cfg
+setup.py
+evilshortgen/__init__.py
+evilshortgen.egg-info/PKG-INFO
+evilshortgen.egg-info/SOURCES.txt
+evilshortgen.egg-info/dependency_links.txt
+evilshortgen.egg-info/entry_points.txt
+evilshortgen.egg-info/not-zip-safe
+evilshortgen.egg-info/top_level.txt
