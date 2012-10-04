@@ -1,6 +1,7 @@
 from byteplay import (
     Code, STORE_FAST, YIELD_VALUE,
     BINARY_LSHIFT, SetLineno, LOAD_FAST,
+    UNPACK_SEQUENCE,
 )
 from functools import partial
 from tornado import gen
@@ -15,24 +16,38 @@ def shortgen(fnc):
         if 'def' in line:
             break
     source = source[num + 1:]
+    vars_count = 0
+    last = []
     for num, line in enumerate(code.code):
-        if num and SetLineno in code.code[num - 1]:
+        if SetLineno in line:
             if '<<' in source[line_num]:
-                last = num, line
+                last = []
+                vars_count = len(map(str.strip, 
+                    source[line_num].split('<<')[0].split(','),
+                ))
             line_num += 1
+        elif vars_count:
+            last.append((num, line))
+            vars_count -= 1
         if BINARY_LSHIFT in line:
-            ls_num, ls_line, (lo_num, lo_line) = (
-                num, line, last,
-            )
-            code.code[ls_num] = (YIELD_VALUE, None)
-            code.code[ls_num + 1] = (STORE_FAST, lo_line[1])
-            for num, line in enumerate(code.code):
-                if line == lo_line:
-                    if num >= ls_num:
-                        code.code[num] = (LOAD_FAST, lo_line[1])
-                    else:
-                        pops.append(num)
-    for num, line in enumerate(pops):
+            code.code[num] = (YIELD_VALUE, None)
+            increaser = 2
+            if len(last) > 1:
+                code.code.insert(num + 3, (UNPACK_SEQUENCE, len(last)))
+                pops.append(num + 2)
+                increaser = 4
+            for store_num, store_line in enumerate(last):
+                code.code.insert(num + increaser + store_num,
+                    (STORE_FAST, store_line[1][1]))
+            pops.append(num + 1)
+            for _num, _line in enumerate(code.code):
+                for store_line in last:
+                    if _line == store_line[1]:
+                        if _num >= num:
+                            code.code[_num] = (LOAD_FAST, store_line[1][1])
+                        else:
+                            pops.append(_num)
+    for num, line in enumerate(sorted(pops)):
         code.code.pop(line - num)
     fnc.func_code = code.to_code()
     return fnc

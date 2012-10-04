@@ -27,7 +27,3 @@ But with shortgen evil magic::
             arg1='arg1', arg1='arg2'
         )
         self.write(value)
-
-Known issues
-============
-Construction like ``a, b << c`` not work.
